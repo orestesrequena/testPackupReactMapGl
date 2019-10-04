@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import Geocoder from "react-map-gl-geocoder";
 import { Marker } from "react-map-gl";
-import { GeoJsonLayer } from "deck.gl";
+import DeckGL, { GeoJsonLayer, LineLayer } from "deck.gl";
 import './map.css';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
-
 
 class Directions extends Component {
     state = {
@@ -18,16 +17,15 @@ class Directions extends Component {
     };
 
     constructor(props) {
-
         super();
         console.log(props);
         this.MAPBOX_TOKEN = props.mapboxApiAccessToken;
         this.mapRef = props.mapRef;
         this.handleOnResult = props.onResult;
         this.handleGeocoderViewportChange = props.onViewportChange;
-        this.map = props.map;
-        console.log(this.MAPBOX_TOKEN);
-        console.log(  this.map);
+        this.viewport = props.viewport;
+        this.map = this.mapRef.current.getMap();
+        console.log(this.map);
 
     }
 
@@ -51,7 +49,7 @@ class Directions extends Component {
         this.markerLatStart = event.result.center[1];
         this.markerLngStart = event.result.center[0];
         this.markerTxtStart = event.result.text;
-        console.log(this.markerLatStart, this.markerLngStart, this.markerTxtStart);
+        console.log(this.markerLngStart, this.markerLatStart, this.markerTxtStart);
 
         this.setState({
             searchResultLayerStart: new GeoJsonLayer({
@@ -94,55 +92,215 @@ class Directions extends Component {
         this.getDirections(val);
     };
 
-    getDirections = val => {
-        const { markerLatStart, markerLngStart, markerLatEnd, markerLngEnd, } = this.state;
-        console.log(markerLatStart + " " + markerLngStart + " " + markerLatEnd + "  " + markerLngEnd)
-        fetch('https://api.mapbox.com/directions/v5/mapbox/' + val + '/' + markerLngStart + ',' + markerLatStart + ';' + markerLngEnd + ',' + markerLatEnd + '?access_token=' + this.MAPBOX_TOKEN)
-            .then(res => res.json())
-            .then((data) => {
-                console.log(data);
-                this.setState({ directions: data })
-            })
-            .catch(console.log)
+    //     getDirections = val => {
+    //         const { markerLatStart, markerLngStart, markerLatEnd, markerLngEnd, } = this.state;
+    //         var route = "";
+    //         var data2 = " ";
+    //         console.log(markerLatStart + " " + markerLngStart + " " + markerLatEnd + "  " + markerLngEnd)
+    //          fetch('https://api.mapbox.com/directions/v5/mapbox/' + val + '/' + markerLngStart + ',' + markerLatStart + ';' + markerLngEnd + ',' + markerLatEnd + '?access_token=' + this.MAPBOX_TOKEN+"&geometries=geojson")
+    //        // fetch(' https://api.mapbox.com/directions/v5/mapbox/driving/-73.989%2C40.733%3B-74%2C40.733.json?access_token=pk.eyJ1IjoiaW9kbyIsImEiOiJjazE3eDJiemgxZXlxM2VycXFidmw2NWI0In0.b60JvDgqnGqa95JBe1nWXQ&geometries=geojson')
+    //         .then(res => res.json())
+    //             .then((data) => {
+    //                 console.log(data);
+    //                 this.setState({ directions: data })
+    //                  data2 = data.routes[0];
+    //                  console.log(data2)
+    //                  route = data2.geometry.coordinates;
+    //                  console.log(route)
+    //             })
+    //             .catch(console.log)
 
-          
+    // ////////////////////////////////////////////////////////////////
 
+    //     var geojson = {
+    //       type: 'Feature',
+    //       properties: {},
+    //       geometry: {
+    //         type: 'LineString',
+    //         coordinates: route
+    //       }
+    //     };
+    //     console.log(geojson);
+    //     // if the route already exists on the map, reset it using setData
+    //         this.map.addLayer({
+    //         id: 'route',
+    //         type: 'line',
+    //         source: {
+    //           type: 'geojson',
+    //           data: {
+    //             type: 'Feature',
+    //             properties: {},
+    //             geometry: {
+    //               type: 'LineString',
+    //               coordinates: geojson
+    //             }
+    //           }
+    //         },
+    //         layout: {
+    //           'line-join': 'round',
+    //           'line-cap': 'round'
+    //         },
+    //         paint: {
+    //           'line-color': '#3887be',
+    //           'line-width': 15,
+    //           'line-opacity': 0.75
+    //         }
+    //       });
+    //       this.map.addLayer({
+    //         id: 'routearrows',
+    //         type: 'symbol',
+    //         source: 'route',
+    //         layout: {
+    //           'symbol-placement': 'line',
+    //           'text-field': '▶',
+    //           'text-size': [
+    //             "interpolate",
+    //             ["linear"],
+    //             ["zoom"],
+    //             12, 24,
+    //             22, 60
+    //           ],
+    //           'symbol-spacing': [
+    //             "interpolate",
+    //             ["linear"],
+    //             ["zoom"],
+    //             12, 30,
+    //             22, 160
+    //           ],
+    //           'text-keep-upright': false
+    //         },
+    //         paint: {
+    //           'text-color': '#3887be',
+    //           'text-halo-color': 'hsl(55, 11%, 96%)',
+    //           'text-halo-width': 3
+    //         }
+    //       }, 'waterway-label');
+    //     }
 
-        const layerLine = {
-            'id': 'lines',
-            'type': 'line',
-            'source': {
-                'type': 'geojson',
-                'data': {
-                    'type': 'FeatureCollection',
-                    'features': [{
-                        'type': 'Feature',
-                        'properties': {
-                            'color': '#F7455D' // red
-                        },
-                        'geometry': {
-                            'type': 'LineString',
-                            'coordinates': [
-                                [-122.4833858013153, 37.829607404976734],
-                                [-122.4830961227417, 37.82932776098012],
-                                [-122.4830746650696, 37.82932776098012],
-                                [-122.48218417167662, 37.82889558180985],
-                                [-122.48218417167662, 37.82890193740421],
-                                [-122.48221099376678, 37.82868372835086],
-                                [-122.4822163581848, 37.82868372835086],
-                                [-122.48205006122589, 37.82801003030873]
-                            ]
-                        }
-                    }]
-                }
+    getRoute = end => {
+        // make a directions request using cycling profile
+        // an arbitrary start will always be the same
+        // only the end or destination will change
+        var start = [-122.662323, 45.523751];
+        var url = 'https://api.mapbox.com/directions/v5/mapbox/cycling/' + start[0] + ',' + start[1] + ';' + end[0] + ',' + end[1] + '?steps=true&geometries=geojson&access_token=' + this.MAPBOX_TOKEN +"&geometries=geojson";
+      
+        // make an XHR request https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+        var req = new XMLHttpRequest();
+        req.responseType = 'json';
+        req.open('GET', url, true);
+        req.onload = () =>{
+          var data = req.response.routes[0];
+          var route = data.geometry.coordinates;
+          var geojson = {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: route
             }
-        }
+          };
+          // if the route already exists on the map, reset it using setData
+          if (this.map.getSource('route')) {
+            this.map.getSource('route').setData(geojson);
+          } else { // otherwise, make a new request
+            this.map.addLayer({
+              id: 'route',
+              type: 'line',
+              source: {
+                type: 'geojson',
+                data: {
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: geojson
+                  }
+                }
+              },
+              layout: {
+                'line-join': 'round',
+                'line-cap': 'round'
+              },
+              paint: {
+                'line-color': '#3887be',
+                'line-width': 5,
+                'line-opacity': 0.75
+              }
+            });
+          }
+          // add turn instructions here at the end
+        };
+        req.send();
+      }
+      
+  
 
+    getDirections = val => {
 
+        this.map.on('click', function (e) {
+            var coordsObj = e.lngLat;
+            var coords = Object.keys(coordsObj).map(function (key) {
+                return coordsObj[key];
+            });
+            var end = {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Point',
+                        coordinates: coords
+                    }
+                }
+                ]
+            };
+            if (this.map.getLayer('end')) {
+                this.map.getSource('end').setData(end);
+            } else {
+                this.map.addLayer({
+                    id: 'end',
+                    type: 'circle',
+                    source: {
+                        type: 'geojson',
+                        data: {
+                            type: 'FeatureCollection',
+                            features: [{
+                                type: 'Feature',
+                                properties: {},
+                                geometry: {
+                                    type: 'Point',
+                                    coordinates: coords
+                                }
+                            }]
+                        }
+                    },
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': '#f30'
+                    }
+                });
+            }
+            this.getRoute(coords);
+        });
     }
 
+
     render() {
-        const { markerLatStart, markerLngStart, markerTxtStart, markerLatEnd, markerLngEnd, markerTxtEnd } = this.state;
+        const layer = new LineLayer({
+            id: 'line-layer',
+            pickable: true,
+            getWidth: 50,
+            getSourcePosition: d => d.from.coordinates,
+            getTargetPosition: d => d.to.coordinates,
+            getColor: d => [Math.sqrt(d.inbound + d.outbound), 140, 0],
+            onHover: ({ object, x, y }) => {
+                const tooltip = `${object.from.name} to ${object.to.name}`;
+                /* Update tooltip
+                   http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
+                */
+            }
+        });
+        const { markerLatStart, markerLngStart, markerTxtStart, markerLatEnd, markerLngEnd, markerTxtEnd, viewport } = this.state;
         return (
             <div  >
                 <Marker className="marker2" latitude={markerLatStart} longitude={markerLngStart} offsetLeft={-20} offsetTop={-10}>
@@ -151,6 +309,7 @@ class Directions extends Component {
                 <Marker className="marker3" latitude={markerLatEnd} longitude={markerLngEnd} offsetLeft={-20} offsetTop={-10}>
                     <p>{markerTxtEnd}</p>
                 </Marker>
+                <DeckGL {...viewport} layers={[layer]} />
                 <Geocoder
                     mapRef={this.mapRef}
                     onResult={this.handleOnResultStart}

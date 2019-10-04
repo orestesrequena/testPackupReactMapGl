@@ -8,10 +8,6 @@ import Geocoder from "react-map-gl-geocoder";
 import Directions from "./directions";
 import './map.css';
 
-
-// Please be a decent human and don't abuse my Mapbox API token.
-// If you fork this sandbox, replace my API token with your own.
-// Ways to set Mapbox token: https://uber.github.io/react-map-gl/#/Documentation/getting-started/about-mapbox-tokens
 const MAPBOX_TOKEN = "pk.eyJ1IjoiaW9kbyIsImEiOiJjazE3eDJiemgxZXlxM2VycXFidmw2NWI0In0.b60JvDgqnGqa95JBe1nWXQ";
 
 class Map extends Component {
@@ -26,14 +22,7 @@ class Map extends Component {
     markerLng: 0.0,
     markerTxt: "",
   };
-
   mapRef = React.createRef()
-
-  redraw({project}) {
-    const [cx, cy] = project([-122, 37]);
-    return <circle cx={cx} cy={cy} r={4} fill="blue" />;
-  }
-
 
   handleViewportChange = viewport => {
     this.setState({
@@ -52,52 +41,51 @@ class Map extends Component {
   };
 
   handleOnResult = event => {
-    console.log(event.result);
     this.markerLat = event.result.center[1];
     this.markerLng = event.result.center[0];
     this.markerTxt = event.result.text;
     console.log(this.markerLat, this.markerLng, this.markerTxt);
 
-    this.setState({
-      searchResultLayer: 
-      // new GeoJsonLayer({
-      //   id: "search-result",
-      //   data: event.result.geometry,
-      //   getFillColor: [255, 0, 0, 128],
-      //   getRadius: 1000,
-      //   pointRadiusMinPixels: 10,
-      //   pointRadiusMaxPixels: 10,
-      // }),
-      new LineLayer({
-        id: 'line-layer',
-        pickable: true,
-        getWidth: 50,
-        getSourcePosition: [
-          2.493896484375,
-          50.708634400828224
-        ],
-        getTargetPosition: [
-          3.2080078125,
-          50.233151832472245
-        ],
-        getColor: "#2d1cff",
-        // onHover: ({object, x, y}) => {
-        //   const tooltip = `${event.result.text} to ${event.result.text}`;
-        //   /* Update tooltip
-        //      http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
-        //   */
-        // }
-      }),
-      markerLat: this.markerLat,
-      markerLng: this.markerLng,
-      markerTxt: this.markerTxt
-    });
+    // this.setState({
+    //   searchResultLayer: 
+    //   // new GeoJsonLayer({
+    //   //   id: "search-result",
+    //   //   data: event.result.geometry,
+    //   //   getFillColor: [255, 0, 0, 128],
+    //   //   getRadius: 1000,
+    //   //   pointRadiusMinPixels: 10,
+    //   //   pointRadiusMaxPixels: 10,
+    //   // }),
+    //   new LineLayer({
+    //     id: 'line-layer',
+    //     pickable: false,
+    //     getWidth: 50,
+    //     getSourcePosition: [
+    //       2.493896484375,
+    //       50.708634400828224
+    //     ],
+    //     getTargetPosition: [
+    //       3.2080078125,
+    //       50.233151832472245
+    //     ],
+    //     getColor: "#2d1cff",
+    //     // onHover: ({object, x, y}) => {
+    //     //   const tooltip = `${event.result.text} to ${event.result.text}`;
+    //     //   /* Update tooltip
+    //     //      http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
+    //     //   */
+    //     // }
+    //   }),
+    //   markerLat: this.markerLat,
+    //   markerLng: this.markerLng,
+    //   markerTxt: this.markerTxt
+    // });
+
   };
 
   render() {
 
-    const { viewport, searchResultLayer, markerLat, markerLng, markerTxt } = this.state;
-    console.log(searchResultLayer);
+    const { viewport, markerLat, markerLng, markerTxt } = this.state;
     let view = false;
     console.log(markerLat, markerLng, markerTxt);
     if (markerLng !== 0) {
@@ -113,18 +101,15 @@ class Map extends Component {
           height="100%"
           onViewportChange={this.handleViewportChange}
           mapboxApiAccessToken={MAPBOX_TOKEN}
-
         >
-           <SVGOverlay redraw={this.redraw} />
           <Directions
             // map = {this.map}
+            viewport={viewport}
             mapRef={this.mapRef}
             onResult={this.handleOnResult}
             onViewportChange={this.handleGeocoderViewportChange}
             mapboxApiAccessToken={MAPBOX_TOKEN} />
-          <Marker className="marker" latitude={37.78} longitude={-122.41} offsetLeft={-20} offsetTop={-10}>
-            <p></p>
-          </Marker>
+          <Marker className="marker" latitude={37.78} longitude={-122.41} offsetLeft={-20} offsetTop={-10}></Marker>
           {view ? <Marker className="marker" latitude={markerLat} longitude={markerLng} offsetLeft={-20} offsetTop={-10}> </Marker> : null}
           <Geocoder
             mapRef={this.mapRef}
@@ -133,9 +118,6 @@ class Map extends Component {
             mapboxApiAccessToken={MAPBOX_TOKEN}
             position="top-left"
           />
-          <DeckGL {...viewport} layers={[searchResultLayer]} />
-
-
         </MapGL>
       </div>
     );
