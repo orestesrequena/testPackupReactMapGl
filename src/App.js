@@ -1,7 +1,6 @@
 import React from 'react';
 import './App.css';
-import Map from './map/map'
-
+import Map from './map/map';
 function App() {
   return (
     <div>

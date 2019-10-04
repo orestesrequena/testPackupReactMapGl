@@ -11,12 +11,3 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
-.marker {
-display: block;
-border: none;
-border-radius: 50%;
-cursor: pointer;
-background-color: blue;
-padding: 0;
-}
